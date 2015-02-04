@@ -24,9 +24,11 @@ int reader_next(reader_t * r){
 	}
 	else{
 		r->bufsize = fread(r->buf, sizeof(char), MAXBUF, r->f);
+		if(r->bufsize == 0) return EOF;
 		r->ptr = r->buf;
 		r->bufpos = 0;
 	}
+
 	return (int)*r->ptr;
 }
 
