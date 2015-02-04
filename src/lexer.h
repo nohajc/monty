@@ -20,15 +20,16 @@ typedef enum{
 
 #define IS_CMP(x) ((x) & 8)
 #define IS_ASS(x) ((x) & 16)
-#define IS_BIN(x) ((x) & 32)
-#define IS_LOG(x) ((x) & 64)
+#define IS_BIN(x) ((x) & 64)
+#define IS_LOG(x) ((x) & 128)
 
 typedef enum{
 	PLUS, MINUS, MUL, DIV, MOD, EXP, FDIV,
 	EQ = 8, NE, GT, LT, GE, LE,
 	ASSIGN = 16, ADD, SUB, MULEQ, DIVEQ, MODEQ, EXPEQ, FDIVEQ,
-	AND = 32, OR, XOR, INV, SHL, SHR,
-	LAND = 64, LOR, NOT
+	INC = 48, DEC,
+	AND = 64, OR, XOR, INV, SHL, SHR,
+	LAND = 128, LOR, NOT
 } operator_t;
 
 typedef enum{

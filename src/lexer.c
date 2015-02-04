@@ -142,18 +142,112 @@ tok_t lexer_next_token(lexer_t * lex){
 	}
 
 	q1: // got '+'
+	switch(c){
+		case '+':
+			token.type = OP;
+			token.attr.op = INC;
+			c = reader_next(r);
+			return token;
+		case '=':
+			token.type = OP;
+			token.attr.op = ADD;
+			c = reader_next(r);
+			return token;
+		default:
+			token.type = OP;
+			token.attr.op = PLUS;
+			return token;
+	}
 
 	q2: // got '-'
+	switch(c){
+		case '-':
+			token.type = OP;
+			token.attr.op = DEC;
+			c = reader_next(r);
+			return token;
+		case '=':
+			token.type = OP;
+			token.attr.op = SUB;
+			c = reader_next(r);
+			return token;
+		default:
+			token.type = OP;
+			token.attr.op = MINUS;
+			return token;
+	}
 
 	q3: // got '*'
+	switch(c){
+		case '*':
+			c = reader_next(r);
+			goto q17;
+		case '=':
+			token.type = OP;
+			token.attr.op = MULEQ;
+			c = reader_next(r);
+			return token;
+		default:
+			token.type = OP;
+			token.attr.op = MUL;
+			return token;
+	}
 
 	q4: // got '/'
+	switch(c){
+		case '/':
+			c = reader_next(r);
+			goto q18;
+		case '=':
+			token.type = OP;
+			token.attr.op = DIVEQ;
+			c = reader_next(r);
+			return token;
+		default:
+			token.type = OP;
+			token.attr.op = DIV;
+			return token;
+	}
 
 	q5: // got '%'
+	switch(c){
+		case '=':
+			token.type = OP;
+			token.attr.op = MODEQ;
+			c = reader_next(r);
+			return token;
+		default:
+			token.type = OP;
+			token.attr.op = MOD;
+			return token;
+	}
 
 	q6: // got '='
+	switch(c){
+		case '=':
+			token.type = OP;
+			token.attr.op = EQ;
+			c = reader_next(r);
+			return token;
+		default:
+			token.type = OP;
+			token.attr.op = ASSIGN;
+			return token;
+	}
+
 
 	q7: // got '!'
+	switch(c){
+		case '=':
+			token.type = OP;
+			token.attr.op = NE;
+			c = reader_next(r);
+			return token;
+		default:
+			token.type = OP;
+			token.attr.op = NOT;
+			return token;
+	}
 
 	q8: // got '<'
 
@@ -172,4 +266,8 @@ tok_t lexer_next_token(lexer_t * lex){
 	q15: // got '_' or LETTER
 
 	q16: // got nonzero digit
+
+	q17: // got '**'
+
+	q18: // got '//'
 }
