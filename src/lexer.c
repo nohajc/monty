@@ -1,6 +1,9 @@
 #include "lexer.h"
 #include <ctype.h>
 
+#define ISHEX(c) (((c) >= '0' && (c) <= '9') || ((c) >= 'A' && (c) <= 'F') || ((c) >= 'a' && (c) <= 'f'))
+#define HEXVAL(c) ((c) >= 'a' ? ((c) - 'a' + 10) : ((c) >= 'A' ? ((c) - 'A' + 10) : (c) - '0'))
+
 int lexer_init(lexer_t * lex, const char * fname){
 	reader_t * r = &lex->r;
 
@@ -128,9 +131,12 @@ tok_t lexer_next_token(lexer_t * lex){
 	t = lexer_char_type(c);
 	switch(t){
 		case LETTER:
+			// TODO save first ident/keyword char
 			c = reader_next(r);
 			goto q15;
 		case DIGIT: // nonzero
+			token.type = INT;
+			token.attr.i_value = c - '0';
 			c = reader_next(r);
 			goto q16;
 		case WHITE:
@@ -250,24 +256,167 @@ tok_t lexer_next_token(lexer_t * lex){
 	}
 
 	q8: // got '<'
+	switch(c){
+		case '<':
+			token.type = OP;
+			token.attr.op = SHL;
+			c = reader_next(r);
+			return token;
+		case '>':
+			token.type = OP;
+			token.attr.op = NE;
+			c = reader_next(r);
+			return token;
+		case '=':
+			token.type = OP;
+			token.attr.op = LE;
+			c = reader_next(r);
+			return token;
+		default:
+			token.type = OP;
+			token.attr.op = LT;
+			return token;
+	}
 
 	q9: // got '>'
+	switch(c){
+		case '>':
+			token.type = OP;
+			token.attr.op = SHR;
+			c = reader_next(r);
+			return token;
+		case '=':
+			token.type = OP;
+			token.attr.op = GE;
+			c = reader_next(r);
+			return token;
+		default:
+			token.type = OP;
+			token.attr.op = GT;
+			return token;
+
+	}
 
 	q10: // got '&'
+	switch(c){
+		case '&':
+			token.type = OP;
+			token.attr.op = LAND;
+			c = reader_next(r);
+			return token;
+		default:
+			token.type = OP;
+			token.attr.op = AND;
+			return token;
+	}
 
 	q11: // got '|'
+	switch(c){
+		case '|':
+			token.type = OP;
+			token.attr.op = LOR;
+			c = reader_next(r);
+			return token;
+		default:
+			token.type = OP;
+			token.attr.op = OR;
+			return token;
+	}
 
 	q12: // got '\"'
 
 	q13: // got '\''
 
 	q14: // got '0'
+	t = lexer_char_type(c);
+	if(c == 'x'){
+		c = reader_next(r);
+		goto q19;
+	}
+	else if(t = DIGIT){
+		token.type = INT;
+		token.attr.i_value = c - '0';
+		c = reader_next(r);
+		goto q20;
+	}
+	else{
+		token.type = INT;
+		token.attr.i_value = 0;
+		return token;
+	}
 
 	q15: // got '_' or LETTER
 
-	q16: // got nonzero digit
+	q16: // got decimal digit
+	t = lexer_char_type(c);
+	switch(t){
+		case DIGIT:
+			token.attr.i_value = token.attr.i_value * 10 + (c - '0');
+			c = reader_next(r);
+			goto q16;
+		default:
+			return token;
+	}
 
 	q17: // got '**'
+	switch(c){
+		case '=':
+			token.type = OP;
+			token.attr.op = EXPEQ;
+			c = reader_next(r);
+			return token;
+		default:
+			token.type = OP;
+			token.attr.op = EXP;
+			return token;
+	}
 
 	q18: // got '//'
+	switch(c){
+		case '=':
+			token.type = OP;
+			token.attr.op = FDIVEQ;
+			c = reader_next(r);
+			return token;
+		default:
+			token.type = OP;
+			token.attr.op = FDIV;
+			return token;
+	}
+
+	q19: // got '0x'
+	if(ISHEX(c)){
+		token.type = INT;
+		token.attr.i_value = HEXVAL(c);
+		c = reader_next(r);
+		goto q21;
+	}
+	else{
+		token.type = ERR;
+		return token;
+	}
+
+
+	q20: // got octal digit
+	t = lexer_char_type(c);
+	switch(t){
+		case DIGIT:
+			if(c > '7'){
+				token.type = ERR;
+				return token;
+			}
+			token.attr.i_value = token.attr.i_value * 8 + (c - '0');
+			c = reader_next(r);
+			goto q20;
+		default:
+			return token;
+	}
+
+	q21: // got hex digit
+	if(ISHEX(c)){
+		token.attr.i_value = token.attr.i_value * 16 + HEXVAL(c);
+		c = reader_next(r);
+		goto q21;
+	}
+	return token;
 }

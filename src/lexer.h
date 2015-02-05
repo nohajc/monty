@@ -14,7 +14,7 @@ typedef enum{
 	kwAND, kwAS, kwASSERT, kwBREAK, kwCLASS, kwCONTINUE, kwDEF, kwDEL, kwELIF, kwELSE, kwEXCEPT, kwEXEC,
 	kwFINALLY, kwFOR, kwFROM, kwGLOBAL, kwIF, kwIMPORT, kwIN, kwIS, kwLAMBDA, kwNOT, kwOR, kwPASS, kwRAISE,
 	kwRETURN, kwTRY, kwWHILE, kwWITH, kwYIELD, IDENT, OP, BOOL, NONE, STRING, INT, FLOAT, PAR, CURLY, BRAC, 
-	COMMA, SEMICOL, END
+	COMMA, SEMICOL, END, ERR
 } tok_type_t;
 
 
@@ -41,7 +41,7 @@ typedef struct{
 	union{
 		char * ident;
 		char * s_value;
-		uint64_t i_value;
+		int64_t i_value;
 		double f_value;
 		operator_t op;
 		par_t par;
