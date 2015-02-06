@@ -1,5 +1,8 @@
+#include "common.h"
 #include "lexer.h"
+#include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 
 #define ISHEX(c) (((c) >= '0' && (c) <= '9') || ((c) >= 'A' && (c) <= 'F') || ((c) >= 'a' && (c) <= 'f'))
 #define HEXVAL(c) ((c) >= 'a' ? ((c) - 'a' + 10) : ((c) >= 'A' ? ((c) - 'A' + 10) : (c) - '0'))
@@ -7,16 +10,70 @@
 int lexer_init(lexer_t * lex, const char * fname){
 	reader_t * r = &lex->r;
 
-	int success = reader_open(r, const char * fname);
+	int success = reader_open(r, fname);
 	if(!success) return 0;
+	
+	lex->stringpool = malloc(STRP_SIZE * sizeof(char));
+	lex->str_size = STRP_SIZE;
+	lex->str_pos = 0;
+	lex->str_ptr = lex->stringpool;
 
-	c = reader_next(r);
+	(void)reader_next(r);
 	return success;
+}
+
+void lexer_destroy(lexer_t * lex){
+	reader_close(&lex->r);
+	free(lex->stringpool);
+}
+
+void lexer_str_append(lexer_t * lex, char c){
+	REALLOC_CHECK(char, lex->stringpool, lex->str_pos, lex->str_size, 1);
+	lex->str_ptr[lex->str_pos] = c;
+	++lex->str_pos;
+}
+
+void lexer_str_terminate(lexer_t * lex){
+	lexer_str_append(lex, 0);
+}
+
+int lexer_kw_cmp(const void * a, const void * b){
+	const char * ka = a;
+	const keyword_t * kb = b;
+
+	return strcmp(ka, kb->name);
+}
+
+void lexer_kw_check(tok_t * token){
+	keyword_t * kw = bsearch(token->attr.ident, kw_table, NELEMS(kw_table), sizeof(*kw_table), lexer_kw_cmp);
+	if(!kw) return;
+	if(kw->type == BOOL){
+		token->type = BOOL;
+		token->attr.b_val = strcmp(token->attr.ident, "True") ? 0 : 1;
+		return;
+	}
+	if(kw->type == kwAND){
+		token->type = OP;
+		token->attr.op = LAND;
+		return;
+	}
+	if(kw->type == kwOR){
+		token->type = OP;
+		token->attr.op = LOR;
+		return;
+	}
+	if(kw->type == kwNOT){
+		token->type = OP;
+		token->attr.op = NOT;
+		return;
+	}
+	token->type = kw->type;
 }
 
 char_type_t lexer_char_type(int c){
 	if(c == EOF) return END;
 	if(isspace(c)) return WHITE;
+	if(c == '_') return UNDERSC;
 	if(isdigit(c)) return DIGIT;
 	if(isalpha(c)) return LETTER;
 	return OTHER;
@@ -24,7 +81,8 @@ char_type_t lexer_char_type(int c){
 
 tok_t lexer_next_token(lexer_t * lex){
 	reader_t * r = &lex->r;
-	int c, char_type_t t;
+	int c;
+	char_type_t t;
 	int idlen = 0;
 	tok_t token;
 
@@ -114,15 +172,22 @@ tok_t lexer_next_token(lexer_t * lex){
 			c = reader_next(r);
 			return token;
 		case '\"':
+			token.type = STRING;
+			token.attr.ident = lex->str_ptr;
 			c = reader_next(r);
 			goto q12;
 		case '\'':
+			token.type = STRING;
+			token.attr.ident = lex->str_ptr;
 			c = reader_next(r);
 			goto q13;
 		case '0':
 			c = reader_next(r);
 			goto q14;
 		case '_':
+			token.type = IDENT;
+			token.attr.ident = lex->str_ptr;
+			lexer_str_append(lex, c);
 			c = reader_next(r);
 			goto q15;
 		default:;
@@ -131,7 +196,9 @@ tok_t lexer_next_token(lexer_t * lex){
 	t = lexer_char_type(c);
 	switch(t){
 		case LETTER:
-			// TODO save first ident/keyword char
+			token.type = IDENT;
+			token.attr.ident = lex->str_ptr;
+			lexer_str_append(lex, c);
 			c = reader_next(r);
 			goto q15;
 		case DIGIT: // nonzero
@@ -143,7 +210,7 @@ tok_t lexer_next_token(lexer_t * lex){
 			c = reader_next(r);
 			goto q0;
 		case END:
-			token.type = END;
+			token.type = EOI;
 			return token;
 	}
 
@@ -324,8 +391,32 @@ tok_t lexer_next_token(lexer_t * lex){
 	}
 
 	q12: // got '\"'
+	switch(c){
+		case '\"':
+			lexer_str_terminate(lex);
+			c = reader_next(r);
+			return token;
+		case '\\':
+			c = reader_next(r);
+		default:
+			lexer_str_append(lex, c);
+			c = reader_next(r);
+			goto q12;
+	}
 
 	q13: // got '\''
+	switch(c){
+		case '\'':
+			lexer_str_terminate(lex);
+			c = reader_next(r);
+			return token;
+		case '\\':
+			c = reader_next(r);
+		default:
+			lexer_str_append(lex, c);
+			c = reader_next(r);
+			goto q13;
+	}
 
 	q14: // got '0'
 	t = lexer_char_type(c);
@@ -346,6 +437,19 @@ tok_t lexer_next_token(lexer_t * lex){
 	}
 
 	q15: // got '_' or LETTER
+	t = lexer_char_type(c);
+	switch(t){
+		case LETTER:
+		case DIGIT:
+		case UNDERSC:
+			lexer_str_append(lex, c);
+			c = reader_next(r);
+			goto q15;
+		default:
+			lexer_str_terminate(lex);
+			lexer_kw_check(&token);
+			return token;
+	}
 
 	q16: // got decimal digit
 	t = lexer_char_type(c);
