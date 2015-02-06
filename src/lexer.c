@@ -7,6 +7,42 @@
 #define ISHEX(c) (((c) >= '0' && (c) <= '9') || ((c) >= 'A' && (c) <= 'F') || ((c) >= 'a' && (c) <= 'f'))
 #define HEXVAL(c) ((c) >= 'a' ? ((c) - 'a' + 10) : ((c) >= 'A' ? ((c) - 'A' + 10) : (c) - '0'))
 
+const keyword_t kw_table[] = {
+	{"False", BOOL},
+	{"None", NONE},
+	{"True", BOOL},
+	{"and", kwAND},
+	{"as", kwAS},
+	{"assert", kwASSERT},
+	{"break", kwBREAK},
+	{"class", kwCLASS},
+	{"continue", kwCONTINUE},
+	{"def", kwDEF},
+	{"del", kwDEL},
+	{"elif", kwELIF},
+	{"else", kwELSE},
+	{"except", kwEXCEPT},
+	{"exec", kwEXEC},
+	{"finally", kwFINALLY},
+	{"for", kwFOR},
+	{"from", kwFROM},
+	{"global", kwGLOBAL},
+	{"if", kwIF},
+	{"import", kwIMPORT},
+	{"in", kwIN},
+	{"is", kwIS},
+	{"lambda", kwLAMBDA},
+	{"not", kwNOT},
+	{"or", kwOR},
+	{"pass", kwPASS},
+	{"raise", kwRAISE},
+	{"return", kwRETURN},
+	{"try", kwTRY},
+	{"while", kwWHILE},
+	{"with", kwWITH},
+	{"yield", kwYIELD}
+};
+
 int lexer_init(lexer_t * lex, const char * fname){
 	reader_t * r = &lex->r;
 
@@ -29,7 +65,7 @@ void lexer_destroy(lexer_t * lex){
 
 void lexer_str_append(lexer_t * lex, char c){
 	REALLOC_CHECK(char, lex->stringpool, lex->str_pos, lex->str_size, 1);
-	lex->str_ptr[lex->str_pos] = c;
+	*lex->str_ptr++ = c;
 	++lex->str_pos;
 }
 
@@ -83,7 +119,6 @@ tok_t lexer_next_token(lexer_t * lex){
 	reader_t * r = &lex->r;
 	int c;
 	char_type_t t;
-	int idlen = 0;
 	tok_t token;
 
 	c = reader_getchar(r);
@@ -184,17 +219,12 @@ tok_t lexer_next_token(lexer_t * lex){
 		case '0':
 			c = reader_next(r);
 			goto q14;
-		case '_':
-			token.type = IDENT;
-			token.attr.ident = lex->str_ptr;
-			lexer_str_append(lex, c);
-			c = reader_next(r);
-			goto q15;
 		default:;
 	}
 
 	t = lexer_char_type(c);
 	switch(t){
+		case UNDERSC:
 		case LETTER:
 			token.type = IDENT;
 			token.attr.ident = lex->str_ptr;
@@ -211,6 +241,9 @@ tok_t lexer_next_token(lexer_t * lex){
 			goto q0;
 		case END:
 			token.type = EOI;
+			return token;
+		default:
+			token.type = ERR;
 			return token;
 	}
 
@@ -424,7 +457,7 @@ tok_t lexer_next_token(lexer_t * lex){
 		c = reader_next(r);
 		goto q19;
 	}
-	else if(t = DIGIT){
+	else if(t == DIGIT){
 		token.type = INT;
 		token.attr.i_value = c - '0';
 		c = reader_next(r);

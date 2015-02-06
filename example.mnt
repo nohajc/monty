@@ -8,7 +8,7 @@ def under_attack(col, queens){
 
         if c in (left, col, right){
             return True
-	}
+	    }
     }
     return False
 }

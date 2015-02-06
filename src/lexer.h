@@ -55,43 +55,7 @@ typedef struct{
 	tok_type_t type;
 } keyword_t; 
 
-const keyword_t kw_table[] = {
-	{"and", kwAND},
-	{"as", kwAS},
-	{"assert", kwASSERT},
-	{"break", kwBREAK},
-	{"class", kwCLASS},
-	{"continue", kwCONTINUE},
-	{"def", kwDEF},
-	{"del", kwDEL},
-	{"elif", kwELIF},
-	{"else", kwELSE},
-	{"except", kwEXCEPT},
-	{"exec", kwEXEC},
-	{"finally", kwFINALLY},
-	{"for", kwFOR},
-	{"from", kwFROM},
-	{"global", kwGLOBAL},
-	{"if", kwIF},
-	{"import", kwIMPORT},
-	{"in", kwIN},
-	{"is", kwIS},
-	{"lambda", kwLAMBDA},
-	{"not", kwNOT},
-	{"or", kwOR},
-	{"pass", kwPASS},
-	{"raise", kwRAISE},
-	{"return", kwRETURN},
-	{"try", kwTRY},
-	{"while", kwWHILE},
-	{"with", kwWITH},
-	{"yield", kwYIELD},
-	{"False", BOOL},
-	{"None", NONE},
-	{"True", BOOL}
-};
-
-#endif
+extern const keyword_t kw_table[];
 
 #define STRP_SIZE 65536
 
@@ -106,3 +70,5 @@ typedef struct{
 int lexer_init(lexer_t * lex, const char * fname);
 tok_t lexer_next_token(lexer_t * lex);
 void lexer_destroy(lexer_t * lex);
+
+#endif

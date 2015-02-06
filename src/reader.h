@@ -8,7 +8,7 @@
 
 typedef struct{
 	FILE * f;
-	uint64_t fsize;
+	uint64_t fleft;
 	uint32_t bufsize;
 	uint32_t bufpos;
 	char buf[MAXBUF];
