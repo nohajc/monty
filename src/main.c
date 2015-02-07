@@ -17,7 +17,8 @@ int main(int argc, char ** argv){
 
 	do{
 		tok = lexer_next_token(&lex);
-		printf("%s\n", tok_str[tok.type]);
+		//printf("%s\n", tok_str[tok.type]);
+		print_token(&tok);
 	} while(tok.type != EOI);
 
 	lexer_destroy(&lex);

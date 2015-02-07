@@ -16,7 +16,7 @@ int reader_open(reader_t * r, const char * fname){
 }
 
 int reader_getchar(reader_t * r){
-	//printf("reader_getchar: %c\n", *r->ptr);
+	if(!r->fleft) return EOF;
 	return (int)*r->ptr;
 }
 

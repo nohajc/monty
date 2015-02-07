@@ -115,6 +115,8 @@ char_type_t lexer_char_type(int c){
 	return OTHER;
 }
 
+
+// TODO: implement parsing of comments
 tok_t lexer_next_token(lexer_t * lex){
 	reader_t * r = &lex->r;
 	int c;
@@ -122,6 +124,7 @@ tok_t lexer_next_token(lexer_t * lex){
 	tok_t token;
 
 	c = reader_getchar(r);
+	//printf("got char: '%c' = %d\n", c, c);
 
 	q0: // first char
 	switch(c){
@@ -208,12 +211,12 @@ tok_t lexer_next_token(lexer_t * lex){
 			return token;
 		case '\"':
 			token.type = STRING;
-			token.attr.ident = lex->str_ptr;
+			token.attr.s_value = lex->str_ptr;
 			c = reader_next(r);
 			goto q12;
 		case '\'':
 			token.type = STRING;
-			token.attr.ident = lex->str_ptr;
+			token.attr.s_value = lex->str_ptr;
 			c = reader_next(r);
 			goto q13;
 		case '0':
@@ -458,6 +461,10 @@ tok_t lexer_next_token(lexer_t * lex){
 		goto q19;
 	}
 	else if(t == DIGIT){
+		if(c > '7'){
+			token.type = ERR;
+			return token;
+		}
 		token.type = INT;
 		token.attr.i_value = c - '0';
 		c = reader_next(r);

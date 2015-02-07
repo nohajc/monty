@@ -29,3 +29,9 @@ def solve(n){
 for answer in solve(BOARD_SIZE){
     print(answer)
 }
+
+str = "ah\"o'j";
+str2 = 'ah\'oj"ki';
+num = 12345678;
+num2 = 070
+num3 = 0xFF;
