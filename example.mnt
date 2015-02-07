@@ -7,15 +7,17 @@ def under_attack(col, queens){
         left, right = left - 1, right + 1
 
         if c in (left, col, right){
-            return True
-	    }
+            return True # short comment
+	     }
     }
     return False
 }
 
+# short comment
+
 def solve(n){
     if n == 0{
-        return [[]]
+        return [[ /* long * comment / */ ]]
     }
 
     smaller_solutions = solve(n - 1)

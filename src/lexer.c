@@ -116,7 +116,6 @@ char_type_t lexer_char_type(int c){
 }
 
 
-// TODO: implement parsing of comments
 tok_t lexer_next_token(lexer_t * lex){
 	reader_t * r = &lex->r;
 	int c;
@@ -222,6 +221,9 @@ tok_t lexer_next_token(lexer_t * lex){
 		case '0':
 			c = reader_next(r);
 			goto q14;
+		case '#':
+			c = reader_next(r);
+			goto q22;
 		default:;
 	}
 
@@ -312,6 +314,9 @@ tok_t lexer_next_token(lexer_t * lex){
 			token.attr.op = DIVEQ;
 			c = reader_next(r);
 			return token;
+		case '*':
+			c = reader_next(r);
+			goto q23;
 		default:
 			token.type = OP;
 			token.attr.op = DIV;
@@ -540,7 +545,6 @@ tok_t lexer_next_token(lexer_t * lex){
 		return token;
 	}
 
-
 	q20: // got octal digit
 	t = lexer_char_type(c);
 	switch(t){
@@ -555,6 +559,25 @@ tok_t lexer_next_token(lexer_t * lex){
 		default:
 			return token;
 	}
+
+	q22: // short comment
+	if(c != '\n'){
+		c = reader_next(r);
+		goto q22;
+	}
+	c = reader_next(r);
+	goto q0;
+
+	q23: // long comment
+	if(c == '*'){
+		c = reader_next(r);
+		if(c == '/'){
+			c = reader_next(r);
+			goto q0;
+		}
+	}
+	c = reader_next(r);
+	goto q23;
 
 	q21: // got hex digit
 	if(ISHEX(c)){
