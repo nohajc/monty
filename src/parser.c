@@ -23,15 +23,102 @@ void parser_match(parser_t * p, tok_type_t t){
 	}
 }
 
+void parser_match_par(parser_t * p, tok_type_t t, par_t d){
+	if(p->token.type == t && p->token.attr.par == d){
+		p->token = lexer_next_token(&p->lex);
+	}
+	else{
+		parser_error(t);
+	}
+
+}
 
 node_t * nt_simple_stmt(parser_t * p){
 	//TODO
 	return NULL;
 }
 
-node_t * nt_if_stmt(parser_t * p){
+
+node_t * nt_expression(parser_t * p){
 	//TODO
 	return NULL;
+}
+
+node_t * nt_suite(parser_t * p){
+	node_t * nod;
+	if(p->token.type == CURLY && p->token.attr.par == LEFT){
+		parser_match_par(p, CURLY, LEFT);
+		nod = nt_file_input(p);
+		parser_match_par(p, CURLY, RIGHT);
+	}
+	else{
+		nod = nt_stmt_list(p, 1);
+		parser_match(p, NEWLINE);
+	}
+	return nod;
+}
+
+node_t * nt_elif_stmt_rest(parser_t * p){
+	node_t * nod = ast_new_node(ELIF_STMT_R);
+
+	FIRST(nod) = nt_suite(p);
+
+	if(p->token.type == kwELIF){
+		REST(nod) = nt_elif_stmt(p);
+	}
+	else if(p->token.type == kwELSE){
+		REST(nod) = nt_else_stmt(p);
+	}
+	else{
+		REST(nod) = NULL;
+	}
+
+	return nod;
+}
+
+node_t * nt_elif_stmt(parser_t * p){
+	node_t * nod;
+	parser_match(p, kwELIF);
+	nod = ast_new_node(ELIF_STMT);
+	FIRST(nod) = nt_expression(p);
+	REST(nod) = nt_elif_stmt_rest(p);
+	return nod;
+}
+
+node_t * nt_else_stmt(parser_t * p){
+	node_t * nod;
+	parser_match(p, kwELSE);
+	nod = ast_new_node(ELSE_STMT);
+	FIRST(nod) = nt_suite(p);
+	REST(nod) = NULL;
+	return nod;
+}
+
+node_t * nt_if_stmt_rest(parser_t * p){
+	node_t * nod = ast_new_node(IF_STMT_R);
+
+	FIRST(nod) = nt_suite(p);
+
+	if(p->token.type == kwELIF){
+		REST(nod) = nt_elif_stmt(p);
+	}
+	else if(p->token.type == kwELSE){
+		REST(nod) = nt_else_stmt(p);
+	}
+	else{
+		REST(nod) = NULL;
+	}
+
+	return nod;
+}
+
+node_t * nt_if_stmt(parser_t * p){
+	node_t * nod;
+	parser_match(p, kwIF);
+	nod = ast_new_node(IF_STMT);
+	FIRST(nod) = nt_expression(p);
+	REST(nod) = nt_if_stmt_rest(p);
+	return nod;
 }
 
 node_t * nt_while_stmt(parser_t * p){

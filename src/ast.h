@@ -2,7 +2,7 @@
 #define __AST__
 
 typedef enum{
-	ATOM, FINPUT, STMT_LIST, EXPR
+	ATOM, FINPUT, STMT_LIST, IF_STMT, IF_STMT_R, ELIF_STMT, ELIF_STMT_R, ELSE_STMT, EXPR
 } ntype_t;
 
 #define TYPE(n) n->type
