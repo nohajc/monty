@@ -44,6 +44,15 @@ node_t * nt_expression(parser_t * p){
 	return NULL;
 }
 
+node_t * nt_expression_list(parser_t * p){
+	//TODO
+	return NULL;
+}
+
+node_t * nt_target_list(parser_t * p){
+	return NULL;
+}
+
 node_t * nt_suite(parser_t * p){
 	node_t * nod;
 	if(p->token.type == CURLY && p->token.attr.par == LEFT){
@@ -122,13 +131,32 @@ node_t * nt_if_stmt(parser_t * p){
 }
 
 node_t * nt_while_stmt(parser_t * p){
-	//TODO
-	return NULL;
+	node_t * nod;
+	parser_match(p, kwWHILE);
+	nod = ast_new_node(WHILE_STMT);
+	FIRST(nod) = nt_expression(p);
+	REST(nod) = nt_suite(p);
+	// else is not implemented
+	return nod;
+}
+
+node_t * nt_for_stmt_rest(parser_t * p){
+	node_t * nod;
+	nod = ast_new_node(FOR_STMT_R);
+	FIRST(nod) = nt_expression_list(p);
+	REST(nod) = nt_suite(p);
+	// else is not implemented
+	return nod;
 }
 
 node_t * nt_for_stmt(parser_t * p){
-	//TODO
-	return NULL;
+	node_t * nod;
+	parser_match(p, kwFOR);
+	nod = ast_new_node(FOR_STMT);
+	FIRST(nod) = nt_target_list(p);
+	parser_match(p, kwIN);
+	REST(nod) = nt_for_stmt_rest(p);
+	return nod;
 }
 
 node_t * nt_try_stmt(parser_t * p){

@@ -13,6 +13,7 @@ int parser_init(parser_t * p, const char * fname);
 node_t * parser_run(parser_t * p);
 
 node_t * nt_suite(parser_t * p);
+node_t * nt_target_list(parser_t * p);
 node_t * nt_else_stmt(parser_t * p);
 node_t * nt_elif_stmt_rest(parser_t * p);
 node_t * nt_elif_stmt(parser_t * p);
