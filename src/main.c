@@ -19,7 +19,7 @@ int main(int argc, char ** argv){
 		tok = lexer_next_token(&lex);
 		//printf("%s\n", tok_str[tok.type]);
 		print_token(&tok);
-	} while(tok.type != EOI);
+	} while(tok.type != EOI && tok.type != ERR);
 
 	lexer_destroy(&lex);
 

@@ -43,6 +43,12 @@ const keyword_t kw_table[] = {
 	{"yield", kwYIELD}
 };
 
+const char tok_str[][MAXKW] = {
+	"kwAND", "kwAS", "kwASSERT", "kwBREAK", "kwCLASS", "kwCONTINUE", "kwDEF", "kwDEL", "kwELIF", "kwELSE", "kwEXCEPT", "kwEXEC", "kwFINALLY", "kwFOR", "kwFROM",
+	"kwGLOBAL",	"kwIF", "kwIMPORT", "kwIN", "kwIS", "kwLAMBDA", "kwNOT", "kwOR", "kwPASS", "kwRAISE", "kwRETURN", "kwTRY", "kwWHILE", "kwWITH", "kwYIELD",
+	"IDENT", "OP", "BOOL", "NONE", "STRING", "INT", "FLOAT", "PAR", "CURLY", "BRAC", "COMMA", "SEMICOL", "NEWLINE", "EOI", "ERR"
+};
+
 int lexer_init(lexer_t * lex, const char * fname){
 	reader_t * r = &lex->r;
 
@@ -224,6 +230,9 @@ tok_t lexer_next_token(lexer_t * lex){
 		case '#':
 			c = reader_next(r);
 			goto q22;
+		case '\n':
+			c = reader_next(r);
+			goto q24;
 		default:;
 	}
 
@@ -578,6 +587,13 @@ tok_t lexer_next_token(lexer_t * lex){
 	}
 	c = reader_next(r);
 	goto q23;
+
+	q24:
+	while(c == '\n'){
+		c = reader_next(r);
+	}
+	token.type = NEWLINE;
+	return token;
 
 	q21: // got hex digit
 	if(ISHEX(c)){

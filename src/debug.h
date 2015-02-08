@@ -4,17 +4,16 @@
 #include <inttypes.h>
 #include "lexer.h"
 
-const char tok_str[][MAXKW] = {
-	"kwAND", "kwAS", "kwASSERT", "kwBREAK", "kwCLASS", "kwCONTINUE", "kwDEF", "kwDEL", "kwELIF", "kwELSE", "kwEXCEPT", "kwEXEC", "kwFINALLY", "kwFOR", "kwFROM",
-	"kwGLOBAL",	"kwIF", "kwIMPORT", "kwIN", "kwIS", "kwLAMBDA", "kwNOT", "kwOR", "kwPASS", "kwRAISE", "kwRETURN", "kwTRY", "kwWHILE", "kwWITH", "kwYIELD",
-	"IDENT", "OP", "BOOL", "NONE", "STRING", "INT", "FLOAT", "PAR", "CURLY", "BRAC", "COMMA", "SEMICOL", "EOI", "ERR"
-};
 
 void print_token(tok_t * tok){
-	if(tok->type == kwDEF || tok->type == kwFOR || tok->type == kwWHILE || tok->type == kwIF || tok->type == kwELIF || tok->type == kwELSE || tok->type == kwTRY
-		|| tok->type == kwEXCEPT || tok->type == kwFINALLY || tok->type == kwRETURN){
-		printf("\n");
+	if(tok->type == NEWLINE){
+		printf("NL\n");
+		return;
 	}
+	/*if(tok->type == kwDEF || tok->type == kwFOR || tok->type == kwWHILE || tok->type == kwIF || tok->type == kwELIF || tok->type == kwELSE || tok->type == kwTRY
+		|| tok->type == kwEXCEPT || tok->type == kwFINALLY || tok->type == kwRETURN){
+		:printf("\n");
+	}*/
 
 	if(tok->type <= IDENT){
 		if(tok->type != IDENT) printf("kw:");
@@ -143,7 +142,7 @@ void print_token(tok_t * tok){
 				printf("%c", (tok->attr.par == LEFT ? '(' : ')'));
 				break;
 			case CURLY:
-				printf("%s\n", (tok->attr.par == LEFT ? "{" : "\n}"));
+				printf("%s", (tok->attr.par == LEFT ? "{" : "}"));
 				break;
 			case BRAC:
 				printf("%c", (tok->attr.par == LEFT ? '[' : ']'));
@@ -152,7 +151,7 @@ void print_token(tok_t * tok){
 				printf(",");
 				break;
 			case SEMICOL:
-				printf(";\n");
+				printf(";");
 				break;
 			case EOI:
 				break;
