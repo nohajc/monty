@@ -46,7 +46,7 @@ const keyword_t kw_table[] = {
 const char tok_str[][MAXKW] = {
 	"kwAND", "kwAS", "kwASSERT", "kwBREAK", "kwCLASS", "kwCONTINUE", "kwDEF", "kwDEL", "kwELIF", "kwELSE", "kwEXCEPT", "kwEXEC", "kwFINALLY", "kwFOR", "kwFROM",
 	"kwGLOBAL",	"kwIF", "kwIMPORT", "kwIN", "kwIS", "kwLAMBDA", "kwNOT", "kwOR", "kwPASS", "kwRAISE", "kwRETURN", "kwTRY", "kwWHILE", "kwWITH", "kwYIELD",
-	"IDENT", "OP", "BOOL", "NONE", "STRING", "INT", "FLOAT", "PAR", "CURLY", "BRAC", "COMMA", "SEMICOL", "NEWLINE", "EOI", "ERR"
+	"IDENT", "OP", "BOOL", "NONE", "STRING", "INT", "FLOAT", "PAR", "CURLY", "BRAC", "COMMA", "SEMICOL", "DOT", "NEWLINE", "EOI", "ERR"
 };
 
 int lexer_init(lexer_t * lex, const char * fname){
@@ -169,6 +169,10 @@ tok_t lexer_next_token(lexer_t * lex){
 			return token;
 		case ';':
 			token.type = SEMICOL;
+			c = reader_next(r);
+			return token;
+		case '.':
+			token.type = DOT;
 			c = reader_next(r);
 			return token;
 		case '+':

@@ -49,8 +49,49 @@ node_t * nt_expression_list(parser_t * p){
 	return NULL;
 }
 
-node_t * nt_target_list(parser_t * p){
-	return NULL;
+node_t * nt_target(parser_t * p){
+	node_t * nod;
+
+	if(p->token.type == PAR && p->token.attr.par == LEFT){
+		parser_match_par(p, PAR, LEFT);
+		nod = nt_target_list(p, 1);
+		parser_match_par(p, PAR, RIGHT);
+	}
+	else if(p->token.type == BRAC && p->token.attr.par == LEFT){
+		parser_match_par(p, BRAC, LEFT);
+		nod = nt_target_list(p, 1);
+		parser_match_par(p, BRAC, RIGHT);
+	}
+
+	//TODO
+	
+	return nod;
+};
+
+node_t * nt_target_list(parser_t * p, int first){
+	node_t * nod;
+	if(!first){
+		switch(p->token.type){
+			case kwIN:
+			case SEMICOL:
+			case NEWLINE:
+				return NULL;
+			case PAR:
+			case BRAC:
+				if(p->token.attr.par == RIGHT){
+					return NULL;
+				}
+			case OP:
+				if(p->token.attr.op == ASSIGN){
+					return NULL;
+				}
+			default:;
+		}
+	}
+	nod = ast_new_node(TARGET_LIST);
+	FIRST(nod) = nt_target(p);
+	REST(nod) = nt_target_list(p, 0);
+	return nod;
 }
 
 node_t * nt_suite(parser_t * p){
@@ -153,7 +194,7 @@ node_t * nt_for_stmt(parser_t * p){
 	node_t * nod;
 	parser_match(p, kwFOR);
 	nod = ast_new_node(FOR_STMT);
-	FIRST(nod) = nt_target_list(p);
+	FIRST(nod) = nt_target_list(p, 1);
 	parser_match(p, kwIN);
 	REST(nod) = nt_for_stmt_rest(p);
 	return nod;

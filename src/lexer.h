@@ -15,7 +15,7 @@ typedef enum{
 	kwAND, kwAS, kwASSERT, kwBREAK, kwCLASS, kwCONTINUE, kwDEF, kwDEL, kwELIF, kwELSE, kwEXCEPT, kwEXEC,
 	kwFINALLY, kwFOR, kwFROM, kwGLOBAL, kwIF, kwIMPORT, kwIN, kwIS, kwLAMBDA, kwNOT, kwOR, kwPASS, kwRAISE,
 	kwRETURN, kwTRY, kwWHILE, kwWITH, kwYIELD, IDENT, OP, BOOL, NONE, STRING, INT, FLOAT, PAR, CURLY, BRAC, 
-	COMMA, SEMICOL, NEWLINE, EOI, ERR
+	COMMA, SEMICOL, DOT, NEWLINE, EOI, ERR
 } tok_type_t;
 
 extern const char tok_str[][MAXKW];
