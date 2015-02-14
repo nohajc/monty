@@ -1,0 +1,90 @@
+_target ::=
+             identifier
+                | "(" target_list ")"
+                | "[" target_list "]"
+					 | atom _attributeref
+					 | atom _subscription
+					 | atom _slicing
+					 | atom _call
+
+target ::= 
+             identifier
+                | "(" target_list ")"
+                | "[" target_list "]"
+                | attributeref
+                | subscription
+                | slicing
+
+_attributeref ::=
+             "." identifier [
+				 _attributeref
+				    | _subscription
+					 | _slicing
+					 | _call 
+				]
+
+
+attributeref ::= 
+             primary "." identifier
+
+_subscription ::=
+             "[" expression_list "]" [
+              _attributeref
+				    | _subscription
+					 | _slicing
+					 | _call 
+				]
+
+subscription ::= 
+             primary "[" expression_list "]"
+
+_slicing ::= "[" (short_slice | slice_list) "]" [
+              _attributeref
+				    | _subscription
+					 | _slicing
+					 | _call 
+				]
+
+slicing ::= 
+             simple_slicing | extended_slicing
+
+_call ::=
+             "(" [argument_list [","]
+                            | expression genexpr_for] ")" [
+              _attributeref
+				    | _subscription
+					 | _slicing
+					 | _call 
+				]
+
+call ::= 
+             primary "(" [argument_list [","]
+                            | expression genexpr_for] ")"
+ 
+simple_slicing ::= 
+             primary "[" short_slice "]"
+  
+extended_slicing ::= 
+             primary "[" slice_list "]" 
+ 
+primary ::= 
+             atom | attributeref
+              | subscription | slicing | call
+
+atom ::= 
+             identifier | literal | enclosure
+
+literal ::= 
+             stringliteral | integer | longinteger
+                | floatnumber | imagnumber
+
+call ::= 
+             primary "(" [argument_list [","]
+                            | expression genexpr_for] ")"
+ 
+enclosure ::= 
+             parenth_form | list_display
+                | generator_expression | dict_display
+                | string_conversion | yield_atom
+
+
