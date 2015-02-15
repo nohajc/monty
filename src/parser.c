@@ -9,8 +9,11 @@ int parser_init(parser_t * p, const char * fname){
 	return success;
 }
 
-void parser_error(tok_type_t t){
-	fprintf(stderr, "Syntax error, expected %s.\n", tok_str[t]);
+#define EX 1
+#define UN 0
+
+void parser_error(tok_type_t t, int expected){
+	fprintf(stderr, "Syntax error, %sexpected %s.\n", (expected ? "" : "un"), tok_str[t]);
 	exit(1);
 }
 
@@ -19,7 +22,7 @@ void parser_match(parser_t * p, tok_type_t t){
 		p->token = lexer_next_token(&p->lex);
 	}
 	else{
-		parser_error(t);
+		parser_error(t, EX);
 	}
 }
 
@@ -28,9 +31,21 @@ void parser_match_par(parser_t * p, tok_type_t t, par_t d){
 		p->token = lexer_next_token(&p->lex);
 	}
 	else{
-		parser_error(t);
+		parser_error(t, EX);
 	}
 
+}
+
+char * parser_match_ident(parser_t * p, tok_type_t t){
+	char * id = NULL;
+	if(p->token.type == t){
+		id = p->token.attr.ident;
+		p->token = lexer_next_token(&p->lex);
+	}
+	else{
+		parser_error(t, EX);
+	}
+	return id;
 }
 
 node_t * nt_simple_stmt(parser_t * p){
@@ -49,8 +64,30 @@ node_t * nt_expression_list(parser_t * p){
 	return NULL;
 }
 
+node_t * nt_atom(parser_t * p){
+	//TODO
+	char * id;
+	id = parser_match_ident(p, IDENT);
+	return NULL;
+}
+
+node_t * nt_attributeref(parser_t * p){
+	//TODO
+	return NULL;
+}
+
+node_t * nt_subscript_or_slice(parser_t * p){
+	//TODO
+	return NULL;
+}
+
+node_t * nt_call(parser_t * p){
+	//TODO
+	return NULL;
+}
 node_t * nt_target(parser_t * p){
-	node_t * nod;
+	node_t * nod, * tmp;
+	int have_ident = 0;
 
 	if(p->token.type == PAR && p->token.attr.par == LEFT){
 		parser_match_par(p, PAR, LEFT);
@@ -62,8 +99,49 @@ node_t * nt_target(parser_t * p){
 		nod = nt_target_list(p, 1);
 		parser_match_par(p, BRAC, RIGHT);
 	}
+	
+	if(p->token.type == IDENT){
+		have_ident = 1;
+	}
+	tmp = nt_atom(p);
 
-	//TODO
+	switch(p->token.type){
+		case DOT:
+			//attributeref
+			nod = ast_new_node(ATTREF);
+			FIRST(nod) = tmp;
+			REST(nod) = nt_attributeref(p);
+		   break;
+		case BRAC:
+			if(p->token.attr.par == LEFT){
+		   	//subscription | slicing
+				nod = ast_new_node(SUBSL);
+				FIRST(nod) = tmp;
+				REST(nod) = nt_subscript_or_slice(p);
+				break;
+			}
+			else{
+				parser_error(BRAC, UN); //TODO
+			}
+		case PAR:
+			if(p->token.attr.par == LEFT){
+		   	//call
+				nod = ast_new_node(CALL);
+				FIRST(nod) = tmp;
+				REST(nod) = nt_call(p);
+				break;
+			}
+			else{
+				parser_error(PAR, UN); //TODO
+			}
+		default:
+			if(have_ident){
+				nod = tmp;
+			}
+			else{
+				parser_error(IDENT, EX);
+			}
+	}
 	
 	return nod;
 };
